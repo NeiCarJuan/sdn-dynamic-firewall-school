@@ -1,4 +1,7 @@
+
 ---
+
+
 ```md
 # Captive Portal & Dashboard (Flask)
 
@@ -15,5 +18,4 @@ Portal **không xử lý OpenFlow hay traffic**.
 - Flask
 - Requests
 - HTML / CSS / JavaScript
-
 
