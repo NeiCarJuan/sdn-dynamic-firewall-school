@@ -16,3 +16,10 @@ Thư mục `controller/` chứa phần **SDN-based Dynamic Firewall**:
 - NumPy
 
 ## Cấu trúc chính
+controller/
+├── sdn_firewall_app.py # Ryu app chính
+├── rest_api.py # REST API
+├── topology/ # Mininet topology
+├── modules/ # AI, rule engine, collector
+├── data/ # learned signatures, rules
+└── tests/ # traffic / attack scripts
