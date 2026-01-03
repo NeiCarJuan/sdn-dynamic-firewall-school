@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -e
-echo "[+] Starting Mininet topology"
-cd controller/topology
-sudo python3 school_topology.py
-#!/bin/bash
+
+echo "[+] Cleaning old Mininet state..."
 sudo mn -c
+
+echo "[+] Starting School topology..."
 sudo mn --custom controller/topology/school_topology.py \
         --topo school \
         --controller=remote,ip=127.0.0.1,port=6633 \
