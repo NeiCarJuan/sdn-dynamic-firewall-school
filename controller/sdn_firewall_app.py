@@ -1,10 +1,3 @@
-"""
-Ninh: Ryu SDN Firewall main app (OpenFlow)
-- PacketIn handling
-- Install forwarding rules
-- Call modules: collector, zscore, rule_engine, mitigation, learner, logger
-"""
-# TODO: implement RyuApp skeleton
 from ryu.base import app_manager
 from ryu.controller import ofp_event
 from ryu.controller.handler import MAIN_DISPATCHER, CONFIG_DISPATCHER, set_ev_cls
