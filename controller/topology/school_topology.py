@@ -1,7 +1,3 @@
-"""
-Ninh: Mininet topology for school network
-"""
-# TODO: implement Mininet topology
 from mininet.topo import Topo
 
 class SchoolTopo(Topo):
