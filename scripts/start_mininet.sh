@@ -7,5 +7,5 @@ sudo mn -c
 echo "[+] Starting School topology..."
 sudo mn --custom controller/topology/school_topology.py \
         --topo school \
-        --controller=remote,ip=127.0.0.1,port=6633 \
+        --controller=remote,ip=127.0.0.1,port=6653 \
         --switch ovs,protocols=OpenFlow13
