@@ -2,9 +2,11 @@ from ryu.base import app_manager
 from ryu.controller import ofp_event
 from ryu.controller.handler import MAIN_DISPATCHER, CONFIG_DISPATCHER, set_ev_cls
 from ryu.ofproto import ofproto_v1_3
-from ryu.lib.packet import packet, ethernet
+from ryu.lib.packet import packet, ethernet, ipv4
 import logging
 
+ACCOUNTING_IP = "10.0.0.2"
+ATTACKER_IP = "10.0.0.100"
 LOG_FILE = "controller/logs/controller.log"
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO)
 
@@ -12,10 +14,13 @@ class SDNFirewall(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 
     def __init__(self, *args, **kwargs):
-        super(SDNFirewall, self).__init__(*args, **kwargs)
-        self.mac_to_port = {}
-        logging.info("SDN Firewall Controller started")
-
+    super(SDNFirewall, self).__init__(*args, **kwargs)
+    logging.basicConfig(
+        filename="controller/logs/accounting.log",
+        level=logging.INFO,
+        format="%(asctime)s %(message)s"
+    )
+    
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
         datapath = ev.msg.datapath
