@@ -1,5 +1,8 @@
+- Controller đã được chuyển từ **Ryu → Faucet**
+- Thư mục `legacy-ryu/` lưu phiên bản cũ để tham khảo
+- Hệ thống hiện tại sử dụng **Faucet + ACL** để triển khai SDN Firewall
 # Tường lửa động dựa trên SDN cho mạng trường học
-(Ryu + OpenFlow + AI + Captive Portal)
+
 
 ## 1. Tổng quan
 Dự án xây dựng một **hệ thống tường lửa động dựa trên SDN** nhằm bảo vệ **mạng khuôn viên trường học**, sử dụng:

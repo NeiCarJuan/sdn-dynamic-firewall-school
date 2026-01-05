@@ -1,0 +1,26 @@
+include:
+  - acl.yaml
+
+vlans:
+  100:
+    vid: 100
+    name: "school"
+    faucet_vips: ["10.0.0.254/24"]
+
+dps:
+  s1:
+    dp_id: 0x1
+    hardware: "Open vSwitch"
+    interfaces:
+      1:
+        name: "student"
+        native_vlan: 100
+        acl_in: block_to_accounting
+      2:
+        name: "accounting"
+        native_vlan: 100
+      3:
+        name: "attacker"
+        native_vlan: 100
+        acl_in: block_to_accounting
+

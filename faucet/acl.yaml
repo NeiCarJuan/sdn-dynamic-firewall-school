@@ -1,0 +1,7 @@
+acls:
+  block_to_accounting:
+    - rule:
+        dl_type: 0x0800
+        nw_dst: 10.0.0.2
+        actions:
+          allow: false
