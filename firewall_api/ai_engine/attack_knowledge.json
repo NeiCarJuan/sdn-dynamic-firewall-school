@@ -1,0 +1,13 @@
+{
+  "known_attacks": {
+    "icmp_flood": {
+      "action": "block",
+      "scope": "temporary"
+    },
+    "port_scan": {
+      "action": "block",
+      "scope": "temporary"
+    }
+  }
+}
+

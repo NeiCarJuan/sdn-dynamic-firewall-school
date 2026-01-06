@@ -1,52 +1,70 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, session
+from controller_api import send_user_context
 
 app = Flask(__name__)
-app.secret_key = "sdn_captive_portal_secret"  # BẮT BUỘC cho session
+app.secret_key = "secret_key_for_demo"
 
-logged_users = []
 
+# =========================
+# ROUTE: LOGIN
+# =========================
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        user = request.form["username"]
-        pw = request.form["password"]
+        username = request.form.get("username")
+        password = request.form.get("password")
 
-        if user == "admin" and pw == "123":
+        # ===== DEMO AUTHENTICATION =====
+        if username == "admin" and password == "123":
             session["authenticated"] = True
-            session["username"] = user
+            session["username"] = username
 
-            if user not in logged_users:
-                logged_users.append(user)
+            # ===== GÁN NGỮ CẢNH NGƯỜI DÙNG =====
+            role = "staff"                     # mock role
+            ip = request.remote_addr           # IP client
 
-            return redirect(url_for("dashboard"))
+            session["role"] = role
+            session["ip"] = ip
+
+            # ===== GỬI THÔNG TIN SANG FIREWALL MODULE =====
+            send_user_context(username, role, ip)
+
+            return redirect("/dashboard")
+
+        else:
+            return render_template("login.html", error="Invalid credentials")
 
     return render_template("login.html")
 
 
+# =========================
+# ROUTE: DASHBOARD
+# =========================
 @app.route("/dashboard")
 def dashboard():
-    # 🚫 Chưa login thì bị chặn
     if not session.get("authenticated"):
-        return redirect(url_for("login"))
+        return redirect("/")
 
     return render_template(
         "dashboard.html",
-        users=logged_users,
-        current_user=session.get("username")
+        user=session.get("username"),
+        role=session.get("role"),
+        ip=session.get("ip")
     )
 
 
+# =========================
+# ROUTE: LOGOUT
+# =========================
 @app.route("/logout")
 def logout():
-    user = session.get("username")
-
     session.clear()
-
-    if user in logged_users:
-        logged_users.remove(user)
-
-    return redirect(url_for("login"))
+    return redirect("/")
 
 
+# =========================
+# MAIN
+# =========================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
