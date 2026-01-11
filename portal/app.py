@@ -1,70 +1,93 @@
-from flask import Flask, render_template, request, redirect, session
-from controller_api import send_user_context
+from flask import Flask, request, render_template, redirect, Response
+from flask_cors import CORS
+import requests
 
 app = Flask(__name__)
-app.secret_key = "secret_key_for_demo"
+CORS(app)
 
+FW = "http://127.0.0.1:9000"
 
-# =========================
-# ROUTE: LOGIN
-# =========================
-@app.route("/", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
+# -----------------------------
+# LOGIN
+# -----------------------------
 
-        # ===== DEMO AUTHENTICATION =====
-        if username == "admin" and password == "123":
-            session["authenticated"] = True
-            session["username"] = username
-
-            # ===== GÁN NGỮ CẢNH NGƯỜI DÙNG =====
-            role = "staff"                     # mock role
-            ip = request.remote_addr           # IP client
-
-            session["role"] = role
-            session["ip"] = ip
-
-            # ===== GỬI THÔNG TIN SANG FIREWALL MODULE =====
-            send_user_context(username, role, ip)
-
-            return redirect("/dashboard")
-
-        else:
-            return render_template("login.html", error="Invalid credentials")
-
+@app.route("/")
+def index():
     return render_template("login.html")
 
 
-# =========================
-# ROUTE: DASHBOARD
-# =========================
+@app.route("/login", methods=["POST"])
+def login():
+    username = request.form["username"]
+    role = request.form["role"]
+    ip = request.form["ip"]
+
+    # Gửi context sang Firewall AI
+    try:
+        requests.post(FW + "/firewall/context", json={
+            "username": username,
+            "role": role,
+            "ip": ip
+        })
+    except:
+        pass
+
+    # Chỉ admin mới được vào dashboard
+    if role == "admin":
+        return redirect(f"/dashboard?ip={ip}&u={username}&r={role}")
+
+    return f"Login OK. Role={role}"
+
+
+# -----------------------------
+# DASHBOARD
+# -----------------------------
+
 @app.route("/dashboard")
 def dashboard():
-    if not session.get("authenticated"):
-        return redirect("/")
-
     return render_template(
         "dashboard.html",
-        user=session.get("username"),
-        role=session.get("role"),
-        ip=session.get("ip")
+        ip=request.args.get("ip"),
+        username=request.args.get("u"),
+        role=request.args.get("r")
     )
 
 
-# =========================
-# ROUTE: LOGOUT
-# =========================
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
+# -----------------------------
+# PROXY API (Browser → Portal → Firewall)
+# -----------------------------
+
+@app.route("/status", methods=["GET","POST","OPTIONS"])
+def status():
+    try:
+        r = requests.get(FW + "/firewall/status", params=request.args)
+        return Response(r.content, status=r.status_code, content_type="application/json")
+    except:
+        return Response('{"error":"firewall not reachable"}', status=500, content_type="application/json")
 
 
-# =========================
-# MAIN
-# =========================
+@app.route("/blocked", methods=["GET","POST","OPTIONS"])
+def blocked():
+    try:
+        r = requests.get(FW + "/firewall/blocked")
+        return Response(r.content, status=r.status_code, content_type="application/json")
+    except:
+        return Response('{"error":"firewall not reachable"}', status=500, content_type="application/json")
+
+
+@app.route("/logs", methods=["GET","POST","OPTIONS"])
+def logs():
+    try:
+        r = requests.get(FW + "/firewall/logs")
+        return Response(r.content, status=r.status_code, content_type="application/json")
+    except:
+        return Response('{"error":"firewall not reachable"}', status=500, content_type="application/json")
+
+
+# -----------------------------
+# START
+# -----------------------------
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000)
 

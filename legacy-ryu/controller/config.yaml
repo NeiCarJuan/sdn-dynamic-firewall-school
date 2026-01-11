@@ -1,9 +1,0 @@
-controller:
-  rest_port: 8080
-
-ai:
-  zscore_threshold: 3.0
-  promote_count: 3   # số lần lặp để nâng cấp thành rule tĩnh
-
-logging:
-  log_dir: controller/logs
