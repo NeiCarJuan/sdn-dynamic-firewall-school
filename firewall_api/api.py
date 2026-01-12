@@ -1,41 +1,50 @@
 from flask import Flask, request, jsonify
-import decision_engine
+import time
 
 app = Flask(__name__)
 
-# Nhận context từ Captive Portal
-@app.route("/firewall/context", methods=["POST"])
-def context():
-    data = request.json
-    return jsonify(decision_engine.handle_user_context(data))
+blocked_ips = []
+event_logs = []
 
-
-# Nhận sự kiện tấn công
 @app.route("/firewall/event", methods=["POST"])
-def event():
+def handle_ids_alert():
     data = request.json
-    return jsonify(decision_engine.handle_attack_event(data))
+    attacker_ip = data.get("src_ip")
+    reason = data.get("reason", "Unknown")
+    confidence = data.get("confidence", 0)
+
+    print(f"⚠️ IDS ALERT → {attacker_ip} | {reason} | confidence={confidence}")
+
+    # Ghi log
+    event_logs.append({
+        "ip": attacker_ip,
+        "reason": reason,
+        "confidence": confidence,
+        "time": time.strftime("%H:%M:%S")
+    })
+
+    # Nếu chưa bị block thì thêm vào blacklist
+    if attacker_ip not in blocked_ips:
+        blocked_ips.append(attacker_ip)
+        print(f"🔥 AI FIREWALL: Blocking {attacker_ip}")
+
+    return jsonify({
+        "status": "received",
+        "action": "blocked",
+        "ip": attacker_ip
+    }), 200
 
 
-# Trạng thái 1 IP
-@app.route("/firewall/status")
-def status():
-    ip = request.args.get("ip")
-    return jsonify(decision_engine.get_status(ip))
-
-
-# Danh sách IP bị block
 @app.route("/firewall/blocked")
-def blocked():
-    return jsonify(decision_engine.get_blocked())
+def get_blocked():
+    return jsonify(blocked_ips)
 
 
-# Log AI
 @app.route("/firewall/logs")
-def logs():
-    return jsonify(decision_engine.get_logs())
+def get_logs():
+    return jsonify(event_logs)
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=9000)
+    app.run(port=9000)
 

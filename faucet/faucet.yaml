@@ -13,14 +13,14 @@ dps:
     hardware: "Open vSwitch"
     interfaces:
       1:
-        name: "student"
+        name: "student"        # h1 nối vào đây
         native_vlan: 100
-        acl_in: block_to_accounting
+        acl_in: block_to_accounting  # Sinh viên bị chặn truy cập Server
       2:
-        name: "accounting"
+        name: "admin"          # h2 nối vào đây (Đổi tên từ accounting -> admin cho rõ)
         native_vlan: 100
+        # Admin không có ACL -> Được phép truy cập mọi nơi
       3:
-        name: "attacker"
+        name: "server_ketoan"  # h3 nối vào đây (Đổi từ attacker -> server)
         native_vlan: 100
-        acl_in: block_to_accounting
-
+        # Server không cần ACL chiều vào

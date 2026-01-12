@@ -2,6 +2,9 @@ acls:
   block_to_accounting:
     - rule:
         dl_type: 0x0800
-        nw_dst: 10.0.0.2
+        nw_dst: 10.0.0.3  # <--- SỬA THÀNH .3 (IP của Server h3)
         actions:
           allow: false
+    - rule:
+        actions:
+          allow: true
