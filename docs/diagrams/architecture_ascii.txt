@@ -1,2 +1,0 @@
-[NI NH - Controller/SDN/AI] <--REST--> [BIÊN - Portal/Dashboard]
-TODO: Update ASCII architecture diagram.
