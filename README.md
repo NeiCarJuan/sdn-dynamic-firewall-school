@@ -29,17 +29,3 @@ Thay vì sử dụng ngưỡng tĩnh (Static Threshold) dễ bị qua mặt, h�
 - Giúp định danh người dùng trước khi truy cập mạng.
 
 ---
-
-## 3. Kiến trúc hệ thống
-
-### 3.1 Data Plane (Mặt phẳng dữ liệu)
-- **Mininet:** Giả lập topo mạng trường học.
-- **Open vSwitch (OVS):** Thiết bị chuyển mạch hỗ trợ OpenFlow 1.3.
-
-### 3.2 Control & Security Plane (Mặt phẳng điều khiển & Bảo mật)
-- **`demo_server.py` (The Brain):** - Tính toán Entropy.
-  - Ra quyết định chặn IP.
-  - API Server nhận dữ liệu từ cảm biến.
-- **`simple_ids.py` (The Sensor):**
-  - Sử dụng thư viện **Scapy**.
-  - Trích xuất đặc trưng gói tin (Header Features) và gửi về Server.
