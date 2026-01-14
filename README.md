@@ -17,7 +17,7 @@ Khác với các giải pháp SDN truyền thống sử dụng Controller cồng
 
 ### 2.1 Phát hiện tấn công bằng Shannon Entropy (AI)
 Thay vì sử dụng ngưỡng tĩnh (Static Threshold) dễ bị qua mặt, hệ thống phân tích độ hỗn loạn thông tin (Entropy) của lưu lượng mạng:
-- **Traffic sạch (Normal):** Entropy cao (~1.0) do tính ngẫu nhiên của hành vi lướt web/truy cập đa dạng.
+- **Traffic sạch (Normal):** Entropy cao do tính ngẫu nhiên của hành vi lướt web/truy cập đa dạng.
 - **Traffic tấn công (Attack):** Entropy giảm đột ngột (tiệm cận 0.0) do các công cụ tấn công thường gửi gói tin lặp lại (cố định IP đích, port, sequence number...) để tối ưu hiệu suất.
 
 ### 2.2 Cơ chế phản ứng thời gian thực
