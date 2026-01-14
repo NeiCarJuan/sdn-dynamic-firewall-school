@@ -78,7 +78,7 @@ def home():
 def login():
     return jsonify({"status": "success", "message": "API Login success"})
 
-# --- LOGIC XỬ LÝ ENTROPY (ĐÃ NÂNG CẤP) ---
+# --- LOGIC XỬ LÝ ENTROPY ---
 @app.route("/firewall/event", methods=["POST"])
 def handle_event():
     data = request.json
