@@ -1,104 +1,45 @@
-- Controller đã được chuyển từ **Ryu → Faucet**
-- Thư mục `legacy-ryu/` lưu phiên bản cũ để tham khảo
-- Hệ thống hiện tại sử dụng **Faucet + ACL** để triển khai SDN Firewall
-# Tường lửa động dựa trên SDN cho mạng trường học
-
+# SDN-BASED DYNAMIC FIREWALL FOR SCHOOL NETWORKS
+**(Phiên bản: Shannon Entropy & Lightweight Automation)**
 
 ## 1. Tổng quan
-Dự án xây dựng một **hệ thống tường lửa động dựa trên SDN** nhằm bảo vệ **mạng khuôn viên trường học**, sử dụng:
-- **OpenFlow + Ryu Controller** (mặt phẳng điều khiển)
-- **Mininet + Open vSwitch** (mặt phẳng dữ liệu – mô phỏng)
-- **Mô-đun AI đơn giản dựa trên thống kê (z-score)** để phát hiện bất thường
-- **Cơ chế học thích nghi (auto-learn)**: sau khi phát hiện tấn công mới, controller ghi nhớ mẫu và nâng cấp thành rule “đã biết”
-- **Captive Portal + Dashboard (Flask)** để xác thực người dùng và hiển thị trạng thái/log
+Dự án xây dựng một hệ thống **Tường lửa động (Dynamic Firewall)** dành cho mạng nội bộ trường học (ví dụ: Phòng thực hành, Thư viện), tập trung vào việc giải quyết **"Mối đe dọa nội bộ" (Insider Threats)**.
 
-> Mục tiêu: bảo vệ các dịch vụ mạng trường học (LMS / website / dịch vụ nội bộ) trước các hình thức tấn công phổ biến như DoS/flooding, scan, đồng thời liên kết hành vi traffic với danh tính người dùng đã xác thực.
+Khác với các giải pháp SDN truyền thống sử dụng Controller cồng kềnh (như Ryu/ONOS), dự án này tiếp cận theo hướng **Lightweight Automation** (Tự động hóa hạng nhẹ):
+- Sử dụng **Python Script** để tương tác trực tiếp với **Open vSwitch (OVS)**.
+- Tích hợp thuật toán **Shannon Entropy** để phát hiện tấn công DDoS/Flood dựa trên tính ngẫu nhiên của gói tin thay vì chỉ đếm số lượng đơn thuần.
+- Tích hợp **Captive Portal** để mô phỏng quy trình xác thực người dùng.
 
----
-
-## 2. Các tính năng chính
-
-### 2.1 Phòng thủ hai lớp
-- **Tấn công đã biết**: được phát hiện bằng các rule tĩnh định nghĩa sẵn (drop / limit ngay tại switch).
-- **Tấn công chưa biết**: được phát hiện bởi AI (z-score) → controller sinh rule động để giảm thiểu.
-
-### 2.2 Cơ chế học thích nghi (Auto-learn)
-Khi phát hiện một tấn công mới:
-1. AI đánh dấu traffic là bất thường
-2. Controller áp dụng rule phòng thủ động
-3. Controller lưu mẫu tấn công vào bộ nhớ “learned signatures”
-4. Nếu mẫu lặp lại vượt ngưỡng, nó được **nâng cấp thành rule tĩnh (tấn công đã biết)**
-
-Cơ chế này giúp hệ thống phản ứng nhanh hơn với các tấn công lặp lại trong tương lai.
+> **Mục tiêu:** Phát hiện và ngăn chặn tức thời các máy trạm (Host) bị nhiễm mã độc hoặc sinh viên cố tình thực hiện tấn công DoS trong mạng LAN, đảm bảo kết nối ổn định cho các máy khác.
 
 ---
 
-### 2.3 Captive Portal & Gắn danh tính người dùng
-- Người dùng phải **đăng nhập qua Captive Portal** trước khi được cấp quyền truy cập đầy đủ.
-- Dashboard hiển thị:
-  - các host đã xác thực
-  - log tấn công / cảnh báo
-  - các mẫu tấn công đã học
-  - (tuỳ chọn) các rule firewall đang hoạt động
+## 2. Tính năng nổi bật
+
+### 2.1 Phát hiện tấn công bằng Shannon Entropy (AI)
+Thay vì sử dụng ngưỡng tĩnh (Static Threshold) dễ bị qua mặt, hệ thống phân tích độ hỗn loạn thông tin (Entropy) của lưu lượng mạng:
+- **Traffic sạch (Normal):** Entropy cao (~1.0) do tính ngẫu nhiên của hành vi lướt web/truy cập đa dạng.
+- **Traffic tấn công (Attack):** Entropy giảm đột ngột (tiệm cận 0.0) do các công cụ tấn công thường gửi gói tin lặp lại (cố định IP đích, port, sequence number...) để tối ưu hiệu suất.
+
+### 2.2 Cơ chế phản ứng thời gian thực
+- Ngay khi phát hiện Entropy giảm dưới mức an toàn, hệ thống tự động gọi lệnh hệ thống (CLI Wrapping) để đẩy luật `DROP` vào bảng dòng (Flow Table) của Switch.
+- Thời gian phản ứng < 1 giây.
+
+### 2.3 Mô phỏng xác thực (Captive Portal)
+- Giao diện Web (Flask) mô phỏng cổng đăng nhập Wifi/LAN của trường học.
+- Giúp định danh người dùng trước khi truy cập mạng.
 
 ---
 
-## 3. Kiến trúc hệ thống (tổng quan)
+## 3. Kiến trúc hệ thống
 
-### Mặt phẳng dữ liệu (Data Plane)
-- Các host (sinh viên / giảng viên / khách) kết nối tới switch OpenFlow (OVS).
-- Các dịch vụ: server trường học (LMS / Web), Internet (tuỳ chọn trong mô phỏng).
+### 3.1 Data Plane (Mặt phẳng dữ liệu)
+- **Mininet:** Giả lập topo mạng trường học.
+- **Open vSwitch (OVS):** Thiết bị chuyển mạch hỗ trợ OpenFlow 1.3.
 
-### Mặt phẳng điều khiển (Control Plane)
-- Ryu Controller cài đặt FlowMod, thu thập thống kê, phát hiện bất thường và thực hiện phòng thủ.
-
-### Mặt phẳng quản lý (Management Plane)
-- Captive Portal & Dashboard (Flask) giao tiếp với controller thông qua REST API.
-
----
-
-## 4. Cấu trúc thư mục dự án
-
-- `controller/`: Controller SDN, firewall, AI, topology Mininet, REST API (chạy trên Ubuntu VM).
-- `portal/`: Captive Portal và Dashboard (Flask Web App).
-- `docs/`: báo cáo, sơ đồ, slide, kịch bản demo.
-- `scripts/`: script hỗ trợ khởi động, reset, demo.
-
----
-
-## 5. Phân công nhóm
-
-- **Ninh**: SDN Controller (Ryu), firewall rule (tĩnh & động), AI z-score, cơ chế học, mô phỏng Mininet, kịch bản tấn công.
-- **Biên**: Captive Portal, Dashboard, giao diện web, tích hợp REST API, hình ảnh/UI cho báo cáo và demo.
-
----
-
-## 6. Yêu cầu môi trường (tóm tắt)
-
-### 6.1 Ninh (Ubuntu VM)
-- Ubuntu 22.04 LTS (khuyến nghị)
-- Python 3.10+
-- Ryu Controller
-- Mininet + Open vSwitch
-- Công cụ hỗ trợ: `iperf3`, `hping3`, `nmap`
-
-### 6.2 Biên (Windows hoặc hệ điều hành bất kỳ)
-- Python 3.10+
-- Flask
-- Thư viện `requests`
-- Trình duyệt web
-
----
-
-## 7. REST API (hợp đồng tối thiểu)
-
-### Portal → Controller
-- `POST /api/login`  
-  Dữ liệu:
-  ```json
-  {
-    "mac": "...",
-    "ip": "...",
-    "username": "...",
-    "role": "student | teacher | guest"
-  }
+### 3.2 Control & Security Plane (Mặt phẳng điều khiển & Bảo mật)
+- **`demo_server.py` (The Brain):** - Tính toán Entropy.
+  - Ra quyết định chặn IP.
+  - API Server nhận dữ liệu từ cảm biến.
+- **`simple_ids.py` (The Sensor):**
+  - Sử dụng thư viện **Scapy**.
+  - Trích xuất đặc trưng gói tin (Header Features) và gửi về Server.
