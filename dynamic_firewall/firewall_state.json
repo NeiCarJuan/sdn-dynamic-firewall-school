@@ -1,7 +1,0 @@
-{
-  "accounting_protected": true,
-  "blocked_hosts": [
-    "10.0.0.100",
-    "10.0.0.100"
-  ]
-}
